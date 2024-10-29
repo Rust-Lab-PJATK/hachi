@@ -1,0 +1,8 @@
+[package]
+name = "hachi"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+notan = { version = "0.12.1", features = ["audio", "egui"] }
+notan_extra = "0.12.1"
