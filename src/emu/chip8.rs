@@ -1,4 +1,5 @@
 use crate::emu::consts::START_ADDR;
+use crate::emu::font::load_fonts;
 use crate::emu::rom::load_rom;
 
 pub struct Chip8 {
@@ -27,7 +28,19 @@ impl Chip8 {
     }
 
     pub fn start(&mut self, rom_path: &str) {
+        load_fonts(&mut self.memory);
         load_rom(rom_path, &mut self.memory);
         println!("{:?}", self.memory);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::emu::chip8::Chip8;
+
+    #[test]
+    pub fn test_chip8() {
+        let mut chip8 = Chip8::new();
+        chip8.start("/Users/dolczyk/Downloads/ibm.ch8");
     }
 }
