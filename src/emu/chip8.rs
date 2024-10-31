@@ -33,14 +33,3 @@ impl Chip8 {
         println!("{:?}", self.memory);
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::emu::chip8::Chip8;
-
-    #[test]
-    pub fn test_chip8() {
-        let mut chip8 = Chip8::new();
-        chip8.start("/Users/dolczyk/Downloads/ibm.ch8");
-    }
-}
