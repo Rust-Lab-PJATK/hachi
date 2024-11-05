@@ -1,8 +1,8 @@
-use std::fs::File;
-use std::io::{BufReader, Read};
 use crate::emu;
 use crate::emu::consts::FONTSET_START_ADDR;
 use crate::emu::font::FONTSET;
+use std::fs::File;
+use std::io::{BufReader, Read};
 
 pub trait VirtualMachine {
     fn get_memory(&mut self) -> &mut [u8];

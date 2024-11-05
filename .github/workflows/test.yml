@@ -1,0 +1,15 @@
+name: 'test'
+on:
+  push:
+    branches:
+      - main
+    pull_request:
+     types: [opened, synchronize]
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Test project
+        run: cargo test --all-features
