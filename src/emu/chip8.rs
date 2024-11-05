@@ -4,12 +4,12 @@ use crate::emu::virtual_machine::VirtualMachine;
 pub struct Chip8 {
     memory: [u8; 4096],
     stack: [u16; 16],
-    sp: u8, // Stack pointer
-    i: u16, // Index register
-    pc: u16, // Program counter
+    sp: u8,      // Stack pointer
+    i: u16,      // Index register
+    pc: u16,     // Program counter
     v: [u8; 16], // Vx registers
     delay_timer: u8,
-    sound_timer: u8
+    sound_timer: u8,
 }
 
 impl Chip8 {
@@ -22,7 +22,7 @@ impl Chip8 {
             pc: START_ADDR as u16,
             v: [0; 16],
             delay_timer: 0,
-            sound_timer: 0
+            sound_timer: 0,
         }
     }
 
@@ -41,9 +41,9 @@ impl VirtualMachine for Chip8 {
 
 #[cfg(test)]
 mod tests {
-    use crate::emu::consts::FONTSET_START_ADDR;
-    use crate::emu::font::{FONTSET};
     use super::*;
+    use crate::emu::consts::FONTSET_START_ADDR;
+    use crate::emu::font::FONTSET;
 
     #[test]
     fn verify_font_load_into_memory() {
