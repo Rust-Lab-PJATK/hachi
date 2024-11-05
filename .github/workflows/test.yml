@@ -4,7 +4,8 @@ on:
     branches:
       - main
     pull_request:
-     types: [opened, synchronize]
+      branches: [main]
+      types: [opened, synchronize]
 jobs:
   linux:
     runs-on: ubuntu-latest
