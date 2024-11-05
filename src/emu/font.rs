@@ -1,8 +1,8 @@
 use crate::emu::consts::FONTSET_START_ADDR;
 
-const FONTSET_SIZE: usize = 80;
+pub const FONTSET_SIZE: usize = 80;
 
-const FONTSET: [u8; FONTSET_SIZE] = [
+pub const FONTSET: [u8; FONTSET_SIZE] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
     0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
@@ -20,9 +20,3 @@ const FONTSET: [u8; FONTSET_SIZE] = [
     0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
     0xF0, 0x80, 0xF0, 0x80, 0x80 // F
 ];
-
-pub fn load_fonts(memory: &mut [u8; 4096]) -> () {
-    for (i, val) in FONTSET.iter().enumerate() {
-        memory[FONTSET_START_ADDR + i] = val.clone();
-    }
-}
