@@ -1,4 +1,4 @@
-use super::state::{State, FRAME_TIME};
+use super::state::State;
 use crate::vm::consts::DISPLAY_WIDTH;
 use notan::app::{App, Color, Graphics, Plugins};
 use notan::draw::{CreateDraw, DrawShapes};
@@ -42,8 +42,8 @@ pub fn draw(
     let mut vm_display_renderer = gfx.create_draw();
 
     if state.vm.is_running {
-        if state.frame_timer >= FRAME_TIME {
-            state.frame_timer = 0.0;
+        if state.can_update_frame {
+            state.can_update_frame = false;
 
             let display_width = app.window().width() as f32;
             let display_height = display_width / 2.0;
