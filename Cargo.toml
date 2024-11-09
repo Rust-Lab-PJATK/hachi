@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 notan = { version = "0.12.1", features = ["audio", "egui"] }
-notan_extra = "0.12.1"
+rfd = "0.15.0"
