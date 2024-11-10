@@ -108,8 +108,8 @@ impl VirtualMachine {
 
                 let i_register_value = self.i_register as usize;
                 let sprite_bytes = self.memory
-                    [i_register_value..(i_register_value + (n as usize))]
-                    .into_iter()
+                    [i_register_value..i_register_value + (n as usize)]
+                    .iter()
                     .enumerate();
 
                 self.variable_registers[0xF] = 0;
