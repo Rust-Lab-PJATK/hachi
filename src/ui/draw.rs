@@ -24,8 +24,8 @@ pub fn draw(
                             .set_directory(pwd.to_str().unwrap())
                             .pick_file();
 
-                        if file_path.is_some() {
-                            state.vm.load_program(file_path.unwrap());
+                        if let Some(file_path) = file_path {
+                            state.vm.load_program(file_path);
                         }
                     }
                 });
