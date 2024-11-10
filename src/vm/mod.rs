@@ -9,9 +9,9 @@ pub struct VirtualMachine {
     pub is_running: bool,
     pub memory: [u8; MEM_SIZE],
     pub video_memory: [[u8; DISPLAY_WIDTH]; DISPLAY_HEIGHT],
-    pub _stack: Vec<u16>,
     pub program_counter: usize,
-    pub i_register: u16,
+    pub _stack: Vec<u16>,
+    pub i_register: usize,
     pub variable_registers: [u8; 16],
     pub _delay_timer: u8,
     pub _sound_timer: u8,
@@ -31,8 +31,8 @@ impl VirtualMachine {
             is_running: false,
             memory,
             video_memory: [[0; DISPLAY_WIDTH]; DISPLAY_HEIGHT],
-            _stack: Vec::with_capacity(STACK_SIZE),
             program_counter: PROG_MEM_START_ADDR,
+            _stack: Vec::with_capacity(STACK_SIZE),
             i_register: 0,
             variable_registers: [0; 16],
             _delay_timer: 0,
@@ -41,8 +41,10 @@ impl VirtualMachine {
     }
 
     pub fn load_program(&mut self, path: PathBuf) {
-        self.memory[PROG_MEM_START_ADDR..].fill(0);
+        self.is_running = false;
         self.video_memory = [[0; DISPLAY_WIDTH]; DISPLAY_HEIGHT];
+        self.program_counter = PROG_MEM_START_ADDR;
+        self.memory[PROG_MEM_START_ADDR..].fill(0);
 
         let file = File::open(path).unwrap();
         let file_size = file.metadata().unwrap().len() as usize;
@@ -76,7 +78,7 @@ impl VirtualMachine {
         let y = nibbles[2] as usize;
         let n = nibbles[3];
         let kk = opcode_bytes[1];
-        let nnn = ((nibbles[1] as u16) << 8) | kk as u16;
+        let nnn = (x << 8) | kk as usize;
 
         match nibbles {
             // Clear screen
@@ -85,7 +87,7 @@ impl VirtualMachine {
             }
             // Jump to address
             [0x1, _, _, _] => {
-                self.program_counter = nnn as usize;
+                self.program_counter = nnn;
             }
             // Set register VX
             [0x6, _, _, _] => {
@@ -106,9 +108,8 @@ impl VirtualMachine {
                 let y_position =
                     self.variable_registers[y] as usize % DISPLAY_HEIGHT;
 
-                let i_register_value = self.i_register as usize;
                 let sprite_bytes = self.memory
-                    [i_register_value..i_register_value + (n as usize)]
+                    [self.i_register..self.i_register + (n as usize)]
                     .iter()
                     .enumerate();
 
