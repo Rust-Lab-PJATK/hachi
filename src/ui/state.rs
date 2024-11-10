@@ -13,8 +13,10 @@ pub fn setup(_gfx: &mut Graphics) -> State {
 
 pub fn update(app: &mut App, state: &mut State) {
     if state.vm.is_running {
-        let num_cycles =
-            state.instructions_per_second / app.timer.fps().round() as u32;
+        let num_cycles = state
+            .instructions_per_second
+            .checked_div(app.timer.fps().round() as u32)
+            .unwrap_or(0);
 
         for _ in 0..num_cycles {
             state.vm.fde_cycle();
