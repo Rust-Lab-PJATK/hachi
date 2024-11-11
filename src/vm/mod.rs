@@ -264,6 +264,10 @@ impl VirtualMachine {
             [0xF, _, 0x0, 0x7] => {
                 self.variable_registers[x] = self.delay_timer;
             }
+            // Wait for a key press, store value in Vx
+            [0xF, _, 0x0, 0xA] => {
+                // TODO: when keypad is implemented
+            }
             // Set delay timer = VX
             [0xF, _, 0x1, 0x5] => {
                 self.delay_timer = self.variable_registers[x];
