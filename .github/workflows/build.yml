@@ -20,11 +20,11 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Build app
-        run: cargo build --release --verbose
       - name: Setup linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get install g++ pkg-config libx11-dev libasound2-dev libudev-dev libxkbcommon-x11-0 libwayland-dev libxkbcommon-dev
+      - name: Build app
+        run: cargo build --release --verbose
       - name: Upload ${{ matrix.os }} artifact
         uses: actions/upload-artifact@v4
         if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
