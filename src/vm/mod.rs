@@ -11,7 +11,7 @@ pub struct VirtualMachine {
     pub memory: [u8; MEM_SIZE],
     pub video_memory: [[u8; DISPLAY_WIDTH]; DISPLAY_HEIGHT],
     pub program_counter: usize,
-    pub stack: Vec<u16>,
+    pub stack: Vec<usize>,
     pub i_register: usize,
     pub variable_registers: [u8; 16],
     pub delay_timer: u8,
@@ -88,7 +88,9 @@ impl VirtualMachine {
             }
             // Return from subroutine
             [0x0, 0x0, 0xE, 0xE] => {
-                self.program_counter = self.stack.pop().unwrap() as usize;
+                if let Some(addr) = self.stack.pop() {
+                    self.program_counter = addr;
+                }
             }
             // Jump to address
             [0x1, _, _, _] => {
@@ -96,7 +98,7 @@ impl VirtualMachine {
             }
             // Call subroutine
             [0x2, _, _, _] => {
-                self.stack.push(self.program_counter as u16);
+                self.stack.push(self.program_counter);
                 self.program_counter = nnn;
             }
             // Skip if VX = kk
@@ -143,60 +145,40 @@ impl VirtualMachine {
             }
             // Set VX = VX + VY
             [0x8, _, _, 0x4] => {
-                let add_option = self.variable_registers[x]
-                    .checked_add(self.variable_registers[y]);
+                let (sum, is_overflow) = self.variable_registers[x]
+                    .overflowing_add(self.variable_registers[y]);
 
-                match add_option {
-                    Some(sum) => {
-                        self.variable_registers[0xF] = 0;
-                        self.variable_registers[x] = sum;
-                    }
-                    None => {
-                        // overflow
-                        self.variable_registers[0xF] = 1;
-                        let overflowed_sum = self.variable_registers[x] as u16
-                            + self.variable_registers[y] as u16;
-                        self.variable_registers[x] =
-                            (overflowed_sum & 0xFF) as u8;
-                    }
-                }
+                self.variable_registers[0xF] = is_overflow as u8;
+
+                self.variable_registers[x] = sum;
             }
             // Set VX = VX - VY
             [0x8, _, _, 0x5] => {
-                if self.variable_registers[x] > self.variable_registers[y] {
-                    self.variable_registers[0xF] = 1;
-                    self.variable_registers[x] -= self.variable_registers[y];
-                    return;
-                }
+                let (diff, is_underflow) = self.variable_registers[x]
+                    .overflowing_sub(self.variable_registers[y]);
 
-                // underflow
-                self.variable_registers[0xF] = 0;
-                let underflowed_difference = self.variable_registers[x]
-                    + (0xFF - self.variable_registers[y]);
-                self.variable_registers[x] = underflowed_difference;
+                self.variable_registers[0xF] = is_underflow as u8;
+
+                self.variable_registers[x] = diff;
             }
             // Set VX = VX >> 1
             [0x8, _, _, 0x6] => {
+                // TODO: handle ambiguous behaviour
                 self.variable_registers[0xF] = self.variable_registers[x] & 0x1;
                 self.variable_registers[x] >>= 1;
             }
             // Set VX = VY - VX
             [0x8, _, _, 0x7] => {
-                if self.variable_registers[y] > self.variable_registers[x] {
-                    self.variable_registers[0xF] = 1;
-                    self.variable_registers[x] =
-                        self.variable_registers[y] - self.variable_registers[x];
-                    return;
-                }
+                let (diff, is_underflow) = self.variable_registers[y]
+                    .overflowing_sub(self.variable_registers[x]);
 
-                // underflow
-                self.variable_registers[0xF] = 0;
-                let underflowed_difference = self.variable_registers[y]
-                    + (0xFF - self.variable_registers[x]);
-                self.variable_registers[x] = underflowed_difference;
+                self.variable_registers[0xF] = is_underflow as u8;
+
+                self.variable_registers[x] = diff;
             }
             // Set VX = VX << 1
             [0x8, _, _, 0xE] => {
+                // TODO: handle ambiguous behaviour
                 self.variable_registers[0xF] =
                     (self.variable_registers[x] & 0x80) >> 7;
                 self.variable_registers[x] <<= 1;
@@ -213,6 +195,7 @@ impl VirtualMachine {
             }
             // Jump to nnn + V0
             [0xB, _, _, _] => {
+                // TODO: handle ambiguous behaviour
                 self.program_counter =
                     self.variable_registers[0] as usize + nnn;
             }
@@ -278,6 +261,7 @@ impl VirtualMachine {
             }
             // Set I = I + VX
             [0xF, _, 0x1, 0xE] => {
+                // TODO: handle ambiguous behaviour
                 self.i_register += self.variable_registers[x] as usize;
             }
             // Set I = location of sprite for VX
