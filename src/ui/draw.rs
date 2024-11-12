@@ -70,6 +70,8 @@ pub fn draw(
         let display_width = app.window().width() as f32;
         let display_height = display_width / 2.0;
         let rect_width = display_width / DISPLAY_WIDTH as f32;
+        let y_offset = (app.window().height() as f32 - display_height) / 2.0;
+
         let colors: [Color; 2] = [
             Color::from_hex(0xA7C9A1FF), // PIXEL OFF
             Color::from_hex(0x282D2DFF), // PIXEL ON
@@ -81,8 +83,6 @@ pub fn draw(
 
             for (column_index, pixel) in pixels {
                 let x_position = column_index as f32 * rect_width;
-                let y_offset =
-                    (app.window().height() as f32 - display_height) / 2.0;
                 let y_position = y_offset + (row_index as f32 * rect_width);
 
                 vm_display_renderer
