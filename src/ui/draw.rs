@@ -2,8 +2,13 @@ use super::state::State;
 use crate::vm::consts::DISPLAY_WIDTH;
 use notan::app::{App, Color, Graphics, Plugins};
 use notan::draw::{CreateDraw, DrawShapes};
-use notan::egui::{CentralPanel, Context, EguiPluginSugar, TopBottomPanel};
-use rfd::FileDialog;
+use notan::egui::{
+    self, CentralPanel, Context, EguiPluginSugar, TopBottomPanel,
+};
+use pollster::FutureExt as _;
+use rfd::AsyncFileDialog;
+use std::sync::Arc;
+use std::thread;
 
 pub fn draw(
     app: &mut App,
@@ -13,19 +18,35 @@ pub fn draw(
 ) {
     let mut ui_renderer = plugins.egui(|ctx: &Context| {
         TopBottomPanel::top("toolbar").show(ctx, |ui| {
-            ui.horizontal(|ui| {
+            egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", |ui| {
                     if ui.button("Open").clicked() {
                         ui.close_menu();
 
-                        let pwd = std::env::current_dir().unwrap();
-                        let file_path = FileDialog::new()
-                            .add_filter("Program File (*.ch8)", &["ch8"])
-                            .set_directory(pwd.to_str().unwrap())
-                            .pick_file();
+                        let fho_guard = state.file_handle_option.try_lock();
 
-                        if let Some(file_path) = file_path {
-                            state.vm.load_program(file_path);
+                        if fho_guard.is_some() {
+                            drop(fho_guard);
+
+                            let fho_arc = Arc::clone(&state.file_handle_option);
+                            let pwd = std::env::current_dir().unwrap();
+                            let file_handle_future = AsyncFileDialog::new()
+                                .add_filter("Program File (*.ch8)", &["ch8"])
+                                .set_directory(pwd.to_str().unwrap())
+                                .pick_file();
+
+                            thread::spawn(move || {
+                                async {
+                                    let mut file_handle_option =
+                                        fho_arc.lock().await;
+
+                                    *file_handle_option =
+                                        file_handle_future.await;
+
+                                    drop(file_handle_option);
+                                }
+                                .block_on()
+                            });
                         }
                     }
                 });

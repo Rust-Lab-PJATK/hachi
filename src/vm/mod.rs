@@ -4,7 +4,7 @@ use consts::*;
 use notan::random::rand;
 use std::fs::File;
 use std::io::{BufReader, Read};
-use std::path::PathBuf;
+use std::path::Path;
 
 pub struct VirtualMachine {
     pub is_running: bool,
@@ -41,11 +41,18 @@ impl VirtualMachine {
         }
     }
 
-    pub fn load_program(&mut self, path: PathBuf) {
-        self.is_running = false;
-        self.video_memory = [[0; DISPLAY_WIDTH]; DISPLAY_HEIGHT];
-        self.program_counter = PROG_MEM_START_ADDR;
-        self.memory[PROG_MEM_START_ADDR..].fill(0);
+    pub fn load_program(&mut self, path: &Path) {
+        if self.is_running {
+            self.is_running = false;
+            self.memory[PROG_MEM_START_ADDR..].fill(0);
+            self.video_memory.fill([0; DISPLAY_WIDTH]);
+            self.program_counter = PROG_MEM_START_ADDR;
+            self.stack.clear();
+            self.i_register = 0;
+            self.variable_registers.fill(0);
+            self.delay_timer = 0;
+            self.sound_timer = 0;
+        }
 
         let file = File::open(path).unwrap();
         let file_size = file.metadata().unwrap().len() as usize;
