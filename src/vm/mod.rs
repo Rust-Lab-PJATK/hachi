@@ -149,7 +149,6 @@ impl VirtualMachine {
                     .overflowing_add(self.variable_registers[y]);
 
                 self.variable_registers[0xF] = is_overflow as u8;
-
                 self.variable_registers[x] = sum;
             }
             // Set VX = VX - VY
@@ -158,7 +157,6 @@ impl VirtualMachine {
                     .overflowing_sub(self.variable_registers[y]);
 
                 self.variable_registers[0xF] = is_underflow as u8;
-
                 self.variable_registers[x] = diff;
             }
             // Set VX = VX >> 1
@@ -173,7 +171,6 @@ impl VirtualMachine {
                     .overflowing_sub(self.variable_registers[x]);
 
                 self.variable_registers[0xF] = is_underflow as u8;
-
                 self.variable_registers[x] = diff;
             }
             // Set VX = VX << 1
