@@ -23,16 +23,16 @@ pub fn draw(
                     if ui.button("Open").clicked() {
                         ui.close_menu();
 
+                        let last_dir = &state.last_dir;
                         let fho_guard = state.file_handle_option.try_lock();
 
                         if fho_guard.is_some() {
                             drop(fho_guard);
 
                             let fho_arc = Arc::clone(&state.file_handle_option);
-                            let pwd = std::env::current_dir().unwrap();
                             let file_handle_future = AsyncFileDialog::new()
                                 .add_filter("Program File (*.ch8)", &["ch8"])
-                                .set_directory(pwd.to_str().unwrap())
+                                .set_directory(last_dir)
                                 .pick_file();
 
                             thread::spawn(move || {
@@ -42,8 +42,6 @@ pub fn draw(
 
                                     *file_handle_option =
                                         file_handle_future.await;
-
-                                    drop(file_handle_option);
                                 }
                                 .block_on()
                             });
