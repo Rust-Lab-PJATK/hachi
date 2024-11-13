@@ -9,7 +9,7 @@ use std::sync::Arc;
 pub struct State {
     pub last_dir: PathBuf,
     pub file_handle_option: Arc<AsyncMutex<Option<FileHandle>>>,
-    pub cycles_per_second: u32,
+    pub cycles_per_frame: u32,
     pub vm: VirtualMachine,
 }
 
@@ -17,12 +17,12 @@ pub fn setup(_gfx: &mut Graphics) -> State {
     State {
         last_dir: std::env::current_dir().unwrap(),
         file_handle_option: Arc::new(AsyncMutex::new(None)),
-        cycles_per_second: 700,
+        cycles_per_frame: 10,
         vm: VirtualMachine::new(),
     }
 }
 
-pub fn update(app: &mut App, state: &mut State) {
+pub fn update(_app: &mut App, state: &mut State) {
     let fho_guard = state.file_handle_option.try_lock();
 
     if let Some(mut fho_guard) = fho_guard {
@@ -30,16 +30,15 @@ pub fn update(app: &mut App, state: &mut State) {
             let file_path = file_handle.path();
 
             state.last_dir = file_path.parent().unwrap().to_path_buf();
+            state.vm.reset();
             state.vm.load_program(file_path);
+
             *fho_guard = None;
         }
     };
 
     if state.vm.is_running {
-        let fps = app.timer.fps().round() as u32;
-        let num_cycles = state.cycles_per_second.checked_div(fps).unwrap_or(0);
-
-        for _ in 0..num_cycles {
+        for _ in 0..state.cycles_per_frame {
             state.vm.fde_cycle();
         }
     }
