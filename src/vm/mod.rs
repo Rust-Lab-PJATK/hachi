@@ -150,16 +150,16 @@ impl VirtualMachine {
                 let (sum, is_overflow) = self.variable_registers[x]
                     .overflowing_add(self.variable_registers[y]);
 
-                self.variable_registers[0xF] = is_overflow as u8;
                 self.variable_registers[x] = sum;
+                self.variable_registers[0xF] = is_overflow as u8;
             }
             // Set VX = VX - VY
             [0x8, _, _, 0x5] => {
                 let (diff, is_underflow) = self.variable_registers[x]
                     .overflowing_sub(self.variable_registers[y]);
 
-                self.variable_registers[0xF] = is_underflow as u8;
                 self.variable_registers[x] = diff;
+                self.variable_registers[0xF] = !is_underflow as u8;
             }
             // Set VX = VX >> 1
             [0x8, _, _, 0x6] => {
@@ -172,8 +172,8 @@ impl VirtualMachine {
                 let (diff, is_underflow) = self.variable_registers[y]
                     .overflowing_sub(self.variable_registers[x]);
 
-                self.variable_registers[0xF] = is_underflow as u8;
                 self.variable_registers[x] = diff;
+                self.variable_registers[0xF] = !is_underflow as u8;
             }
             // Set VX = VX << 1
             [0x8, _, _, 0xE] => {
