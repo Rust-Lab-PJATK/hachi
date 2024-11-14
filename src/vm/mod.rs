@@ -4,7 +4,7 @@ use consts::*;
 use notan::random::rand;
 use std::fs::File;
 use std::io::{BufReader, Read};
-use std::path::PathBuf;
+use std::path::Path;
 
 pub struct VirtualMachine {
     pub is_running: bool,
@@ -41,12 +41,11 @@ impl VirtualMachine {
         }
     }
 
-    pub fn load_program(&mut self, path: PathBuf) {
-        self.is_running = false;
-        self.video_memory = [[0; DISPLAY_WIDTH]; DISPLAY_HEIGHT];
-        self.program_counter = PROG_MEM_START_ADDR;
-        self.memory[PROG_MEM_START_ADDR..].fill(0);
+    pub fn reset(&mut self) {
+        *self = Self::new();
+    }
 
+    pub fn load_program(&mut self, path: &Path) {
         let file = File::open(path).unwrap();
         let file_size = file.metadata().unwrap().len() as usize;
 
@@ -125,7 +124,10 @@ impl VirtualMachine {
             }
             // Add value to register VX
             [0x7, _, _, _] => {
-                self.variable_registers[x] += kk;
+                let (addition_result, _) =
+                    self.variable_registers[x].overflowing_add(kk);
+
+                self.variable_registers[x] = addition_result;
             }
             // Set VX = VY
             [0x8, _, _, 0x0] => {
@@ -148,16 +150,16 @@ impl VirtualMachine {
                 let (sum, is_overflow) = self.variable_registers[x]
                     .overflowing_add(self.variable_registers[y]);
 
-                self.variable_registers[0xF] = is_overflow as u8;
                 self.variable_registers[x] = sum;
+                self.variable_registers[0xF] = is_overflow as u8;
             }
             // Set VX = VX - VY
             [0x8, _, _, 0x5] => {
                 let (diff, is_underflow) = self.variable_registers[x]
                     .overflowing_sub(self.variable_registers[y]);
 
-                self.variable_registers[0xF] = is_underflow as u8;
                 self.variable_registers[x] = diff;
+                self.variable_registers[0xF] = !is_underflow as u8;
             }
             // Set VX = VX >> 1
             [0x8, _, _, 0x6] => {
@@ -170,8 +172,8 @@ impl VirtualMachine {
                 let (diff, is_underflow) = self.variable_registers[y]
                     .overflowing_sub(self.variable_registers[x]);
 
-                self.variable_registers[0xF] = is_underflow as u8;
                 self.variable_registers[x] = diff;
+                self.variable_registers[0xF] = !is_underflow as u8;
             }
             // Set VX = VX << 1
             [0x8, _, _, 0xE] => {
@@ -202,9 +204,9 @@ impl VirtualMachine {
             }
             // Draw to screen
             [0xD, _, _, _] => {
-                let x_position =
+                let base_x_position =
                     self.variable_registers[x] as usize % DISPLAY_WIDTH;
-                let y_position =
+                let base_y_position =
                     self.variable_registers[y] as usize % DISPLAY_HEIGHT;
 
                 let sprite_bytes = self.memory
@@ -215,14 +217,26 @@ impl VirtualMachine {
                 self.variable_registers[0xF] = 0;
 
                 for (row_index, sprite_byte) in sprite_bytes {
+                    let pixel_y_position = base_y_position + row_index;
+
+                    if pixel_y_position == DISPLAY_HEIGHT {
+                        break;
+                    }
+
                     let sprite_pixels = (0u8..8)
                         .rev()
                         .map(|bit_index| (*sprite_byte >> bit_index) & 1)
                         .enumerate();
 
                     for (column_index, sprite_pixel) in sprite_pixels {
+                        let pixel_x_position = base_x_position + column_index;
+
+                        if pixel_x_position == DISPLAY_WIDTH {
+                            break;
+                        }
+
                         let display_pixel = &mut self.video_memory
-                            [y_position + row_index][x_position + column_index];
+                            [pixel_y_position][pixel_x_position];
 
                         if sprite_pixel == 1 && *display_pixel == 1 {
                             self.variable_registers[0xF] = 1;
@@ -280,17 +294,14 @@ impl VirtualMachine {
             }
             // Store V0 through VX starting at I
             [0xF, _, 0x5, 0x5] => {
-                for i in 0..=self.variable_registers[x] as usize {
-                    self.memory[self.i_register + i] =
-                        self.variable_registers[i];
-                }
+                self.memory[self.i_register..=self.i_register + x]
+                    .copy_from_slice(&self.variable_registers[..=x]);
             }
             // Read V0 through VX starting at I
             [0xF, _, 0x6, 0x5] => {
-                for i in 0..=self.variable_registers[x] as usize {
-                    self.variable_registers[i] =
-                        self.memory[self.i_register + i];
-                }
+                self.variable_registers[..=x].copy_from_slice(
+                    &self.memory[self.i_register..=self.i_register + x],
+                );
             }
             // Unknown instruction
             [_, _, _, _] => (),
