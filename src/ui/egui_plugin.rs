@@ -37,23 +37,23 @@ fn file_menu_handler(state: &mut State) -> impl FnOnce(&mut Ui) + '_ {
             ui.close_menu();
 
             let last_dir = &state.last_dir;
-            let fho_guard = state.file_handle_option.try_lock();
+            let fpo_guard = state.file_path_option.try_lock();
 
-            if fho_guard.is_some() {
-                drop(fho_guard);
+            if fpo_guard.is_some() {
+                drop(fpo_guard);
 
-                let fho_arc = Arc::clone(&state.file_handle_option);
-                let file_handle_future = AsyncFileDialog::new()
+                let fpo_arc = Arc::clone(&state.file_path_option);
+                let file_dialog_future = AsyncFileDialog::new()
                     .add_filter("Program File (*.ch8)", &["ch8"])
                     .set_directory(last_dir)
                     .pick_file();
 
                 thread::spawn(move || {
                     async {
-                        let mut file_handle_option = fho_arc.lock().await;
+                        let mut file_path_option = fpo_arc.lock().await;
 
-                        if let Some(file_handle) = file_handle_future.await {
-                            *file_handle_option =
+                        if let Some(file_handle) = file_dialog_future.await {
+                            *file_path_option =
                                 Some(file_handle.path().to_path_buf())
                         }
                     }
