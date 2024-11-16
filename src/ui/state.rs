@@ -26,7 +26,7 @@ pub fn setup(_gfx: &mut Graphics) -> State {
     let file_path = if args.file.is_empty() {
         None
     } else {
-        Some(PathBuf::from(args.file))
+        Some(PathBuf::from(args.file).canonicalize().unwrap())
     };
 
     let last_dir = if let Some(path) = &file_path {
