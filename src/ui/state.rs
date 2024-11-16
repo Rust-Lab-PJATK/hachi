@@ -22,13 +22,11 @@ struct Args {
 
 pub fn setup(_gfx: &mut Graphics) -> State {
     let args = Args::parse();
-
     let file_path = if args.file.is_empty() {
         None
     } else {
         Some(PathBuf::from(args.file).canonicalize().unwrap())
     };
-
     let last_dir = if let Some(path) = &file_path {
         path.parent().unwrap().to_path_buf()
     } else {
@@ -43,14 +41,23 @@ pub fn setup(_gfx: &mut Graphics) -> State {
     }
 }
 
-pub fn update(_app: &mut App, state: &mut State) {
+pub fn update(app: &mut App, state: &mut State) {
     let fpo_guard = state.file_path_option.try_lock();
 
     if let Some(mut fpo_guard) = fpo_guard {
         if let Some(file_path) = fpo_guard.as_ref() {
             state.last_dir = file_path.parent().unwrap().to_path_buf();
+
+            app.window().set_title(
+                format!(
+                    "{} - Hachi",
+                    file_path.file_name().unwrap().to_string_lossy()
+                )
+                .as_str(),
+            );
             state.vm.reset();
             state.vm.load_program(file_path);
+
             *fpo_guard = None;
         }
     };
