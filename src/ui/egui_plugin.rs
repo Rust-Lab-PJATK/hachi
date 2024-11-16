@@ -31,7 +31,7 @@ pub fn init<'a>(
     }
 }
 
-fn file_menu_handler<'a>(state: &'a mut State) -> impl FnOnce(&mut Ui) + 'a {
+fn file_menu_handler(state: &mut State) -> impl FnOnce(&mut Ui) + '_ {
     |ui| {
         if ui.button("Open").clicked() {
             ui.close_menu();
