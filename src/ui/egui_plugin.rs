@@ -14,12 +14,7 @@ pub fn init<'a>(
         TopBottomPanel::top("toolbar").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", file_menu_handler(state));
-            });
-        });
-
-        TopBottomPanel::bottom("bottom").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.label(format!("FPS: {}", app.timer.fps().round()));
+                ui.menu_button("View", view_menu_handler(state));
             });
         });
 
@@ -27,6 +22,8 @@ pub fn init<'a>(
             CentralPanel::default().show(ctx, |ui| {
                 ui.label("Welcome to Hachi!");
             });
+        } else {
+
         }
     }
 }
@@ -61,5 +58,11 @@ fn file_menu_handler(state: &mut State) -> impl FnOnce(&mut Ui) + '_ {
                 });
             }
         }
+    }
+}
+
+fn view_menu_handler(state: &mut State) -> impl FnOnce(&mut Ui) + '_ {
+    |ui| {
+        ui.checkbox(&mut state.debug_mode_enabled, "Debug mode");
     }
 }

@@ -12,6 +12,7 @@ pub struct State {
     pub file_path_option: Arc<AsyncMutex<Option<PathBuf>>>,
     pub cycles_per_frame: u32,
     pub vm: VirtualMachine,
+    pub debug_mode_enabled: bool,
 }
 
 #[derive(Parser)]
@@ -38,6 +39,7 @@ pub fn setup(_gfx: &mut Graphics) -> State {
         file_path_option: Arc::new(AsyncMutex::new(file_path)),
         cycles_per_frame: 10,
         vm: VirtualMachine::new(),
+        debug_mode_enabled: false,
     }
 }
 
