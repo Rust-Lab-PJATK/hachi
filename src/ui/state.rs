@@ -5,6 +5,7 @@ use notan::prelude::*;
 use std::ffi::OsString;
 use std::path::PathBuf;
 use std::sync::Arc;
+use notan::egui::{EguiRegisterTexture, SizedTexture};
 
 #[derive(AppState)]
 pub struct State {
@@ -13,6 +14,8 @@ pub struct State {
     pub cycles_per_frame: u32,
     pub vm: VirtualMachine,
     pub debug_mode_enabled: bool,
+    pub display_renderer: RenderTexture,
+    pub vm_display: SizedTexture
 }
 
 #[derive(Parser)]
@@ -34,12 +37,21 @@ pub fn setup(_gfx: &mut Graphics) -> State {
         std::env::current_dir().unwrap()
     };
 
+    let display_renderer = _gfx
+        .create_render_texture(800, 600)
+        .build()
+        .unwrap();
+
+    let vm_display_texture = _gfx.egui_register_texture(&display_renderer);
+
     State {
         last_dir,
         file_path_option: Arc::new(AsyncMutex::new(file_path)),
         cycles_per_frame: 10,
         vm: VirtualMachine::new(),
         debug_mode_enabled: false,
+        display_renderer: display_renderer,
+        vm_display: vm_display_texture
     }
 }
 

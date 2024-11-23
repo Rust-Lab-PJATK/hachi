@@ -1,6 +1,6 @@
 use super::state::State;
-use notan::app::App;
-use notan::egui::{self, CentralPanel, Context, TopBottomPanel, Ui};
+use notan::app::{App};
+use notan::egui::{self, CentralPanel, Color32, Context, Frame, Mesh, Rect, Sense, Shape, TopBottomPanel, Ui, Window};
 use pollster::FutureExt;
 use rfd::AsyncFileDialog;
 use std::sync::Arc;
@@ -22,8 +22,29 @@ pub fn init<'a>(
             CentralPanel::default().show(ctx, |ui| {
                 ui.label("Welcome to Hachi!");
             });
-        } else {
+        }
 
+        if state.debug_mode_enabled {
+            Window::new("Display").auto_sized().show(ctx, |ui| {
+                Frame::canvas(ui.style()).show(ui, |ui| {
+                    let (rect, _) = ui.allocate_exact_size(
+                        state.vm_display.size,
+                        Sense::hover()
+                    );
+
+                    let mut vm_display_mesh = Mesh::with_texture(state.vm_display.id);
+                    vm_display_mesh.add_rect_with_uv(
+                        rect,
+                        Rect::from_min_max(
+                            egui::pos2(0.0, 1.0),
+                            egui::pos2(1.0, 0.0),
+                        ),
+                        Color32::WHITE,
+                    );
+
+                    ui.painter().add(Shape::mesh(vm_display_mesh));
+                });
+            });
         }
     }
 }
