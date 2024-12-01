@@ -38,7 +38,7 @@ pub fn setup(_gfx: &mut Graphics) -> State {
     };
 
     let display_renderer = _gfx
-        .create_render_texture(800, 600)
+        .create_render_texture(575, 250)
         .build()
         .unwrap();
 

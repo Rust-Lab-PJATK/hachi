@@ -1,6 +1,6 @@
 use super::state::State;
 use notan::app::{App};
-use notan::egui::{self, CentralPanel, Color32, Context, Frame, Mesh, Rect, Sense, Shape, TopBottomPanel, Ui, Window};
+use notan::egui::{self, CentralPanel, Color32, Context, Frame, Grid, Mesh, Rect, Sense, Shape, SidePanel, TopBottomPanel, Ui};
 use pollster::FutureExt;
 use rfd::AsyncFileDialog;
 use std::sync::Arc;
@@ -18,31 +18,45 @@ pub fn init<'a>(
             });
         });
 
-        if !state.vm.is_running {
+        if !state.vm.is_running && !state.debug_mode_enabled {
             CentralPanel::default().show(ctx, |ui| {
                 ui.label("Welcome to Hachi!");
             });
         }
 
         if state.debug_mode_enabled {
-            Window::new("Display").auto_sized().show(ctx, |ui| {
-                Frame::canvas(ui.style()).show(ui, |ui| {
-                    let (rect, _) = ui.allocate_exact_size(
-                        state.vm_display.size,
-                        Sense::hover()
-                    );
+            SidePanel::left("output").show(ctx, |ui| {
+                ui.label("Output");
+            });
 
-                    let mut vm_display_mesh = Mesh::with_texture(state.vm_display.id);
-                    vm_display_mesh.add_rect_with_uv(
-                        rect,
-                        Rect::from_min_max(
-                            egui::pos2(0.0, 1.0),
-                            egui::pos2(1.0, 0.0),
-                        ),
-                        Color32::WHITE,
-                    );
+            SidePanel::right("history").show(ctx, |ui| {
+                ui.label("History");
+            });
 
-                    ui.painter().add(Shape::mesh(vm_display_mesh));
+            CentralPanel::default().show(ctx, |ui| {
+                Grid::new("controls").striped(false).num_columns(1).show(ui, |ui| {
+                    Frame::canvas(ui.style()).show(ui, |ui| {
+                        let (rect, _) = ui.allocate_exact_size(
+                            state.vm_display.size,
+                            Sense::hover()
+                        );
+
+                        let mut vm_display_mesh = Mesh::with_texture(state.vm_display.id);
+                        vm_display_mesh.add_rect_with_uv(
+                            rect,
+                            Rect::from_min_max(
+                                egui::pos2(0.0, 1.0),
+                                egui::pos2(1.0, 0.0),
+                            ),
+                            Color32::WHITE,
+                        );
+
+                        ui.painter().add(Shape::mesh(vm_display_mesh));
+                    });
+
+                    ui.end_row();
+
+                    ui.label("Memory");
                 });
             });
         }
