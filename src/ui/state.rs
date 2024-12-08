@@ -1,12 +1,12 @@
+use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 use crate::vm::VirtualMachine;
 use async_mutex::Mutex as AsyncMutex;
 use clap::Parser;
+use notan::egui::{EguiRegisterTexture, SizedTexture};
 use notan::prelude::*;
 use std::ffi::OsString;
 use std::path::PathBuf;
 use std::sync::Arc;
-use notan::egui::{EguiRegisterTexture, SizedTexture};
-use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 
 #[derive(AppState)]
 pub struct State {
@@ -16,7 +16,7 @@ pub struct State {
     pub vm: VirtualMachine,
     pub debug_mode_enabled: bool,
     pub display_renderer: RenderTexture,
-    pub vm_display: SizedTexture
+    pub vm_display: SizedTexture,
 }
 
 #[derive(Parser)]
@@ -51,8 +51,8 @@ pub fn setup(_gfx: &mut Graphics) -> State {
         cycles_per_frame: 10,
         vm: VirtualMachine::new(),
         debug_mode_enabled: false,
-        display_renderer: display_renderer,
-        vm_display: vm_display_texture
+        display_renderer,
+        vm_display: vm_display_texture,
     }
 }
 
