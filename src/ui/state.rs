@@ -6,6 +6,7 @@ use std::ffi::OsString;
 use std::path::PathBuf;
 use std::sync::Arc;
 use notan::egui::{EguiRegisterTexture, SizedTexture};
+use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 
 #[derive(AppState)]
 pub struct State {
@@ -38,7 +39,7 @@ pub fn setup(_gfx: &mut Graphics) -> State {
     };
 
     let display_renderer = _gfx
-        .create_render_texture(575, 250)
+        .create_render_texture(DEBUG_DISPLAY_WIDTH, DEBUG_DISPLAY_HEIGHT)
         .build()
         .unwrap();
 

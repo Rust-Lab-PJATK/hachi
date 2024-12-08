@@ -1,10 +1,11 @@
 use super::state::State;
 use notan::app::{App};
-use notan::egui::{self, CentralPanel, Color32, Context, Frame, Grid, Mesh, Rect, Sense, Shape, SidePanel, TopBottomPanel, Ui};
+use notan::egui::{self, CentralPanel, Color32, Context, Frame, Grid, Mesh, Rect, Shape, SidePanel, TopBottomPanel, Ui, Vec2};
 use pollster::FutureExt;
 use rfd::AsyncFileDialog;
 use std::sync::Arc;
 use std::thread;
+use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 
 pub fn init<'a>(
     app: &'a mut App,
@@ -25,38 +26,46 @@ pub fn init<'a>(
         }
 
         if state.debug_mode_enabled {
-            SidePanel::left("output").show(ctx, |ui| {
+            SidePanel::left("output").resizable(false).show(ctx, |ui| {
                 ui.label("Output");
             });
 
-            SidePanel::right("history").show(ctx, |ui| {
+            SidePanel::right("history").resizable(false).show(ctx, |ui| {
                 ui.label("History");
             });
 
             CentralPanel::default().show(ctx, |ui| {
-                Grid::new("controls").striped(false).num_columns(1).show(ui, |ui| {
-                    Frame::canvas(ui.style()).show(ui, |ui| {
-                        let (rect, _) = ui.allocate_exact_size(
-                            state.vm_display.size,
-                            Sense::hover()
-                        );
-
-                        let mut vm_display_mesh = Mesh::with_texture(state.vm_display.id);
-                        vm_display_mesh.add_rect_with_uv(
-                            rect,
-                            Rect::from_min_max(
-                                egui::pos2(0.0, 1.0),
-                                egui::pos2(1.0, 0.0),
-                            ),
-                            Color32::WHITE,
-                        );
-
-                        ui.painter().add(Shape::mesh(vm_display_mesh));
+                Grid::new("controls").striped(false).min_col_width(50.0).num_columns(2).show(ui, |ui| {
+                    ui.vertical(|ui| {
+                        ui.label("Keypad");
+                        ui.label(" 1 2 3 c \n 4 5 6 d \n 7 8 9 e \n a 0 b f");
+                        ui.separator();
                     });
 
-                    ui.end_row();
+                    ui.vertical(|ui| {
+                        Frame::canvas(ui.style()).show(ui, |ui| {
+                            let rect = ui.max_rect();
+                            let desired_size = Vec2::new(DEBUG_DISPLAY_WIDTH as f32, DEBUG_DISPLAY_HEIGHT as f32);
 
-                    ui.label("Memory");
+                            let mut vm_display_mesh = Mesh::with_texture(state.vm_display.id);
+                            vm_display_mesh.add_rect_with_uv(
+                                Rect::from_min_size(rect.min, desired_size),
+                                Rect::from_min_max(
+                                    egui::pos2(0.0, 1.0),
+                                    egui::pos2(1.0, 0.0),
+                                ),
+                                Color32::WHITE,
+                            );
+
+                            ui.painter().add(Shape::mesh(vm_display_mesh));
+                        });
+
+                        ui.add_space(250.0);
+
+                        ui.separator();
+
+                        ui.label("Memory");
+                    });
                 });
             });
         }
