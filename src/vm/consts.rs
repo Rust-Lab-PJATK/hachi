@@ -5,7 +5,7 @@ pub const STACK_SIZE: usize = 16;
 pub const PROG_MEM_START_ADDR: usize = 0x200;
 pub const FONTSET_START_ADDR: usize = 0x50;
 pub const FONTSET_SIZE: usize = 80;
-pub const DEBUG_DISPLAY_WIDTH: u32 = 512;
+pub const DEBUG_DISPLAY_WIDTH: u32 = 500;
 pub const DEBUG_DISPLAY_HEIGHT: u32 = 400;
 pub const FONTSET: [u8; FONTSET_SIZE] = [
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0

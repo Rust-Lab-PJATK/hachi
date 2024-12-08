@@ -73,7 +73,7 @@ pub fn init<'a>(
                                 ui.painter().add(Shape::mesh(vm_display_mesh));
                             });
 
-                            ui.add_space(250.0);
+                            ui.add_space(270.0);
 
                             ui.separator();
 
