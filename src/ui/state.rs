@@ -59,6 +59,10 @@ pub fn setup(_gfx: &mut Graphics) -> State {
 pub fn update(app: &mut App, state: &mut State) {
     let fpo_guard = state.file_path_option.try_lock();
 
+    // TODO:
+    // if app.keyboard != state.vm.keyboard
+    //    ustawiamy takie keys down jakie actually są
+
     if let Some(mut fpo_guard) = fpo_guard {
         if let Some(file_path) = fpo_guard.as_ref() {
             state.last_dir = file_path.parent().unwrap().to_path_buf();
