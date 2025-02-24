@@ -4,6 +4,7 @@ use async_mutex::Mutex as AsyncMutex;
 use clap::Parser;
 use notan::egui::{EguiRegisterTexture, SizedTexture};
 use notan::prelude::*;
+use std::collections::HashMap;
 use std::ffi::OsString;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -17,6 +18,7 @@ pub struct State {
     pub debug_mode_enabled: bool,
     pub display_renderer: RenderTexture,
     pub vm_display: SizedTexture,
+    pub keypad_bindigs: HashMap<KeyCode, usize>,
     pub timer: f32,
 }
 
@@ -46,6 +48,31 @@ pub fn setup(gfx: &mut Graphics) -> State {
 
     let vm_display_texture = gfx.egui_register_texture(&display_renderer);
 
+    // TODO: move these bindings into config
+    // Going left-to-right, row-by-row
+    // 1 2 3 4  ->  1 2 3 C
+    // Q W E R  ->  4 5 6 D
+    // A S D F  ->  7 8 9 E
+    // Z X C V  ->  A 0 B F
+    let default_bindings = [
+        (KeyCode::Key1, 0x1),
+        (KeyCode::Key2, 0x2),
+        (KeyCode::Key3, 0x3),
+        (KeyCode::Key4, 0xC),
+        (KeyCode::Q, 0x4),
+        (KeyCode::W, 0x5),
+        (KeyCode::E, 0x6),
+        (KeyCode::R, 0xD),
+        (KeyCode::A, 0x7),
+        (KeyCode::S, 0x8),
+        (KeyCode::D, 0x9),
+        (KeyCode::F, 0xE),
+        (KeyCode::Z, 0xA),
+        (KeyCode::X, 0x0),
+        (KeyCode::C, 0xB),
+        (KeyCode::V, 0xF),
+    ];
+
     State {
         last_dir,
         file_path_option: Arc::new(AsyncMutex::new(file_path)),
@@ -54,16 +81,13 @@ pub fn setup(gfx: &mut Graphics) -> State {
         debug_mode_enabled: false,
         display_renderer,
         vm_display: vm_display_texture,
+        keypad_bindigs: default_bindings.into(),
         timer: 0.0,
     }
 }
 
 pub fn update(app: &mut App, state: &mut State) {
     let fpo_guard = state.file_path_option.try_lock();
-
-    // TODO:
-    // if app.keyboard != state.vm.keyboard
-    //    ustawiamy takie keys down jakie actually są
 
     if let Some(mut fpo_guard) = fpo_guard {
         if let Some(file_path) = fpo_guard.as_ref() {
@@ -95,6 +119,20 @@ pub fn update(app: &mut App, state: &mut State) {
         if state.vm.sound_timer != 0 {
             // TODO: play sound here
             state.vm.sound_timer -= 1;
+        }
+    }
+
+    // Update keypad down-keys
+    for (key, value) in &state.keypad_bindigs {
+        state.vm.keypad[*value] = app.keyboard.is_down(*key);
+    }
+
+    // Handle FX0A GETKEY instruction if it currently halts
+    if state.vm.is_waiting_for_key {
+        for (key, value) in &state.keypad_bindigs {
+            if app.keyboard.was_released(*key) {
+                state.vm.current_key_press = Some(*value as u8);
+            }
         }
     }
 
