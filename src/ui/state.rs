@@ -112,7 +112,6 @@ pub fn update(app: &mut App, state: &mut State) {
     while state.timer >= 1.0 / 60.0 {
         state.timer -= 1.0 / 60.0;
         if state.vm.delay_timer != 0 {
-            println!("fps: {}", app.timer.fps());
             state.vm.delay_timer -= 1;
         }
 
