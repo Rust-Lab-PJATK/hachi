@@ -7,7 +7,10 @@ use std::io::{BufReader, Read};
 use std::path::Path;
 
 pub struct VirtualMachine {
+    // Quality of life
     pub is_running: bool,
+
+    // Necessary fields
     pub memory: [u8; MEM_SIZE],
     pub video_memory: [[u8; DISPLAY_WIDTH]; DISPLAY_HEIGHT],
     pub program_counter: usize,
