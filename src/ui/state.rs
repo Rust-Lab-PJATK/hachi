@@ -114,7 +114,6 @@ pub fn update(app: &mut App, state: &mut State) {
         if state.vm.delay_timer != 0 {
             state.vm.delay_timer -= 1;
         }
-
         if state.vm.sound_timer != 0 {
             // TODO: play sound here
             state.vm.sound_timer -= 1;
