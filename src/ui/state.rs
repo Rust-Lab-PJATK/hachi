@@ -25,7 +25,7 @@ struct Args {
     file: OsString,
 }
 
-pub fn setup(_gfx: &mut Graphics) -> State {
+pub fn setup(gfx: &mut Graphics) -> State {
     let args = Args::parse();
     let file_path = if args.file.is_empty() {
         None
@@ -38,12 +38,12 @@ pub fn setup(_gfx: &mut Graphics) -> State {
         std::env::current_dir().unwrap()
     };
 
-    let display_renderer = _gfx
+    let display_renderer = gfx
         .create_render_texture(DEBUG_DISPLAY_WIDTH, DEBUG_DISPLAY_HEIGHT)
         .build()
         .unwrap();
 
-    let vm_display_texture = _gfx.egui_register_texture(&display_renderer);
+    let vm_display_texture = gfx.egui_register_texture(&display_renderer);
 
     State {
         last_dir,
