@@ -11,7 +11,7 @@ use std::sync::Arc;
 use std::thread;
 
 pub fn init<'a>(
-    app: &'a mut App,
+    _app: &'a mut App,
     state: &'a mut State,
 ) -> impl FnOnce(&Context) + 'a {
     |ctx| {

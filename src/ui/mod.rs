@@ -20,13 +20,12 @@ pub fn draw(
         let vm_display_width = app.window().width() as f32;
         let vm_display_height = vm_display_width / 2.0;
         let rect_width = vm_display_width / DISPLAY_WIDTH as f32;
-        let mut y_offset: f32;
 
-        if state.debug_mode_enabled {
-            y_offset = 0.0;
+        let y_offset = if state.debug_mode_enabled {
+            0.0
         } else {
-            y_offset = (app.window().height() as f32 - vm_display_height) / 2.0;
-        }
+            (app.window().height() as f32 - vm_display_height) / 2.0
+        };
 
         let colors: [Color; 2] = [
             Color::from_hex(0xA7C9A1FF), // PIXEL OFF
