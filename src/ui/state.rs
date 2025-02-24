@@ -17,6 +17,7 @@ pub struct State {
     pub debug_mode_enabled: bool,
     pub display_renderer: RenderTexture,
     pub vm_display: SizedTexture,
+    pub timer: f32,
 }
 
 #[derive(Parser)]
@@ -53,6 +54,7 @@ pub fn setup(gfx: &mut Graphics) -> State {
         debug_mode_enabled: false,
         display_renderer,
         vm_display: vm_display_texture,
+        timer: 0.0,
     }
 }
 
@@ -80,6 +82,21 @@ pub fn update(app: &mut App, state: &mut State) {
             *fpo_guard = None;
         }
     };
+
+    // Timer executed at a rate of 60hz
+    state.timer += app.timer.delta_f32();
+    while state.timer >= 1.0 / 60.0 {
+        state.timer -= 1.0 / 60.0;
+        if state.vm.delay_timer != 0 {
+            println!("fps: {}", app.timer.fps());
+            state.vm.delay_timer -= 1;
+        }
+
+        if state.vm.sound_timer != 0 {
+            // TODO: play sound here
+            state.vm.sound_timer -= 1;
+        }
+    }
 
     if state.vm.is_running {
         for _ in 0..state.cycles_per_frame {
