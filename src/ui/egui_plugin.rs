@@ -1,14 +1,13 @@
+use std::alloc::Layout;
 use super::state::State;
 use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 use notan::app::App;
-use notan::egui::{
-    self, CentralPanel, Color32, Context, Frame, Grid, Mesh, Rect, Shape,
-    SidePanel, TopBottomPanel, Ui, Vec2,
-};
+use notan::egui::{self, Align, CentralPanel, Color32, Context, Frame, Grid, Mesh, Rect, ScrollArea, Shape, SidePanel, TopBottomPanel, Ui, Vec2};
 use pollster::FutureExt;
 use rfd::AsyncFileDialog;
 use std::sync::Arc;
 use std::thread;
+use crate::ui::debug::display_memory_contents;
 
 pub fn init<'a>(
     _app: &'a mut App,
@@ -48,7 +47,10 @@ pub fn init<'a>(
                             ui.label(
                                 " 1 2 3 c \n 4 5 6 d \n 7 8 9 e \n a 0 b f",
                             );
+
                             ui.separator();
+
+                            ui.add_space(525.0);
                         });
 
                         ui.vertical(|ui| {
@@ -77,7 +79,9 @@ pub fn init<'a>(
 
                             ui.separator();
 
-                            ui.label("Memory");
+
+
+                            display_memory_contents(ui, state);
                         });
                     });
             });

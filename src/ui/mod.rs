@@ -1,5 +1,6 @@
 pub(super) mod egui_plugin;
 pub mod state;
+mod debug;
 
 use crate::vm::consts::DISPLAY_WIDTH;
 use notan::app::{App, Color, Graphics, Plugins};
