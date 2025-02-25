@@ -7,13 +7,19 @@ use std::io::{BufReader, Read};
 use std::path::Path;
 
 pub struct VirtualMachine {
+    // Quality of life
     pub is_running: bool,
+    pub is_waiting_for_key: bool,
+    pub current_key_press: Option<u8>,
+
+    // Necessary fields
     pub memory: [u8; MEM_SIZE],
     pub video_memory: [[u8; DISPLAY_WIDTH]; DISPLAY_HEIGHT],
     pub program_counter: usize,
     pub stack: Vec<usize>,
     pub i_register: usize,
     pub variable_registers: [u8; 16],
+    pub keypad: [bool; 16],
     pub delay_timer: u8,
     pub sound_timer: u8,
 }
@@ -30,12 +36,15 @@ impl VirtualMachine {
 
         VirtualMachine {
             is_running: false,
+            is_waiting_for_key: false,
+            current_key_press: None,
             memory,
             video_memory: [[0; DISPLAY_WIDTH]; DISPLAY_HEIGHT],
             program_counter: PROG_MEM_START_ADDR,
             stack: Vec::with_capacity(STACK_SIZE),
             i_register: 0,
             variable_registers: [0; 16],
+            keypad: [false; 16],
             delay_timer: 0,
             sound_timer: 0,
         }
@@ -248,11 +257,17 @@ impl VirtualMachine {
             }
             // Skip if VX key is pressed
             [0xE, _, 0x9, 0xE] => {
-                // TODO: when keypad is implemented
+                let key = self.variable_registers[x] as usize;
+                if self.keypad[key] {
+                    self.program_counter += 2;
+                }
             }
             // Skip if VX key is NOT pressed
             [0xE, _, 0xA, 0x1] => {
-                // TODO: when keypad is implemented
+                let key = self.variable_registers[x] as usize;
+                if !self.keypad[key] {
+                    self.program_counter += 2;
+                }
             }
             // Set VX = delay timer value
             [0xF, _, 0x0, 0x7] => {
@@ -260,7 +275,16 @@ impl VirtualMachine {
             }
             // Wait for a key press, store value in VX
             [0xF, _, 0x0, 0xA] => {
-                // TODO: when keypad is implemented
+                self.is_waiting_for_key = true;
+
+                if let Some(val) = self.current_key_press {
+                    self.variable_registers[x] = val;
+                    self.is_waiting_for_key = false;
+                    self.current_key_press = None;
+                    return;
+                }
+
+                self.program_counter -= 2;
             }
             // Set delay timer = VX
             [0xF, _, 0x1, 0x5] => {
