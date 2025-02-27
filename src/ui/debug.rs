@@ -1,8 +1,18 @@
 use notan::egui;
-use notan::egui::{vec2, Align, Button, Color32, Frame, Grid, Layout, Mesh, Rect, ScrollArea, Shape, Ui, Vec2};
+use notan::egui::{vec2, Align, Button, Color32, Frame, Grid, Layout, Mesh, Rect, ScrollArea, Shape, TextEdit, Ui, Vec2};
 use crate::ui::consts::MEMORY_MAX_DISPLAY_ITEMS;
 use crate::ui::state::State;
 use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
+
+fn filter_by_memory_address(index: &usize, state: &State) -> bool {
+    if state.memory_address_search.is_empty() {
+        return true;
+    }
+
+    let search_address = usize::from_str_radix(&state.memory_address_search, 16).unwrap_or(0);
+
+    *index == search_address
+}
 
 pub fn vm_display(state: &mut State, ui: &mut Ui) {
     Frame::canvas(ui.style()).show(ui, |ui| {
@@ -49,6 +59,8 @@ pub fn display_memory_contents(
 
             state.memory_debug_page += 1;
         }
+
+        ui.add(TextEdit::singleline(&mut state.memory_address_search).desired_width(125.0).hint_text("Find memory address"));
     });
 
     ui.add_space(4.0);
@@ -66,7 +78,8 @@ pub fn display_memory_contents(
                     .show(ui, |ui| {
                         for (index, byte) in state.vm.memory.iter().enumerate()
                             .skip(state.memory_debug_page * MEMORY_MAX_DISPLAY_ITEMS)
-                            .take(MEMORY_MAX_DISPLAY_ITEMS) {
+                            .take(MEMORY_MAX_DISPLAY_ITEMS)
+                            .filter(|(index, _)| filter_by_memory_address(index, state)) {
                             ui.label(format!("0x{:04X}", index));
 
                             ui.label(format!("{:02X}", byte));
