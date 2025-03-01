@@ -1,11 +1,13 @@
 use super::state::State;
+use crate::ui::debug::{display_memory_contents, vm_display};
 use notan::app::App;
-use notan::egui::{self, CentralPanel, Context, Grid, SidePanel, TopBottomPanel, Ui};
+use notan::egui::{
+    self, CentralPanel, Context, Grid, SidePanel, TopBottomPanel, Ui,
+};
 use pollster::FutureExt;
 use rfd::AsyncFileDialog;
 use std::sync::Arc;
 use std::thread;
-use crate::ui::debug::{display_memory_contents, vm_display};
 
 pub fn init<'a>(
     _app: &'a mut App,
