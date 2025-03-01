@@ -1,14 +1,11 @@
 use super::state::State;
-use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 use notan::app::App;
-use notan::egui::{
-    self, CentralPanel, Color32, Context, Frame, Grid, Mesh, Rect, Shape,
-    SidePanel, TopBottomPanel, Ui, Vec2,
-};
+use notan::egui::{self, CentralPanel, Context, Grid, SidePanel, TopBottomPanel, Ui};
 use pollster::FutureExt;
 use rfd::AsyncFileDialog;
 use std::sync::Arc;
 use std::thread;
+use crate::ui::debug::{display_memory_contents, vm_display};
 
 pub fn init<'a>(
     _app: &'a mut App,
@@ -48,36 +45,18 @@ pub fn init<'a>(
                             ui.label(
                                 " 1 2 3 c \n 4 5 6 d \n 7 8 9 e \n a 0 b f",
                             );
+
                             ui.separator();
+
+                            ui.add_space(525.0);
                         });
 
                         ui.vertical(|ui| {
-                            Frame::canvas(ui.style()).show(ui, |ui| {
-                                let rect = ui.max_rect();
-                                let desired_size = Vec2::new(
-                                    DEBUG_DISPLAY_WIDTH as f32,
-                                    DEBUG_DISPLAY_HEIGHT as f32,
-                                );
-
-                                let mut vm_display_mesh =
-                                    Mesh::with_texture(state.vm_display.id);
-                                vm_display_mesh.add_rect_with_uv(
-                                    Rect::from_min_size(rect.min, desired_size),
-                                    Rect::from_min_max(
-                                        egui::pos2(0.0, 1.0),
-                                        egui::pos2(1.0, 0.0),
-                                    ),
-                                    Color32::WHITE,
-                                );
-
-                                ui.painter().add(Shape::mesh(vm_display_mesh));
-                            });
-
-                            ui.add_space(270.0);
+                            vm_display(state, ui);
 
                             ui.separator();
 
-                            ui.label("Memory");
+                            display_memory_contents(ui, state);
                         });
                     });
             });
