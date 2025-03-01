@@ -104,4 +104,3 @@ pub fn display_memory_contents(ui: &mut Ui, state: &mut State) {
         },
     );
 }
-
