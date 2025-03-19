@@ -2,7 +2,7 @@ use super::state::State;
 use crate::ui::debug::{display_memory_contents, vm_display};
 use notan::app::App;
 use notan::egui::{
-    self, CentralPanel, Context, Grid, SidePanel, TopBottomPanel, Ui,
+    self, CentralPanel, Context, Grid, Id, Modal, SidePanel, TopBottomPanel, Ui,
 };
 use pollster::FutureExt;
 use rfd::AsyncFileDialog;
@@ -12,13 +12,39 @@ use std::thread;
 pub fn init<'a>(
     _app: &'a mut App,
     state: &'a mut State,
-) -> impl FnOnce(&Context) + 'a {
+) -> impl FnMut(&Context) + 'a {
     |ctx| {
         TopBottomPanel::top("toolbar").show(ctx, |ui| {
             egui::menu::bar(ui, |ui| {
                 ui.menu_button("File", file_menu_handler(state));
                 ui.menu_button("View", view_menu_handler(state));
             });
+        });
+
+        CentralPanel::default().show(ctx, |ui| {
+            if let Some(e) = state.vm.last_cycle_result.clone().err() {
+                state.vm.pause();
+
+                Modal::new(Id::new("crash-vm-modal")).show(ui.ctx(), |ui| {
+                    ui.label("An VM crash has occurred!");
+
+                    ui.add_space(25.0);
+
+                    ui.label(e.to_string());
+
+                    ui.separator();
+
+                    egui::Sides::new().show(
+                        ui,
+                        |_ui| {},
+                        |ui| {
+                            if ui.button("Ok").clicked() {
+                                state.vm.last_cycle_result = Ok(());
+                            }
+                        },
+                    );
+                });
+            }
         });
 
         if !state.vm.is_running && !state.debug_mode_enabled {

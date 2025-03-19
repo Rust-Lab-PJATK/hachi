@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-notan = { version = "0.12.1", features = ["audio", "egui"] }
-notan_extra = "0.12.1"
+notan = { git = "https://github.com/Nazariglez/notan", rev = "f74aabcba64eadadabb486ff1710863f546c2ef8", features = ["audio", "egui"] }
+notan_extra = { git = "https://github.com/Nazariglez/notan", rev = "f74aabcba64eadadabb486ff1710863f546c2ef8" }
 rfd = "0.15.0"
 pollster = "0.4.0"
 async-mutex = "1.4.0"

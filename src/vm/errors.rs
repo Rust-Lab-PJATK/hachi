@@ -1,11 +1,12 @@
 // TODO: maybe also add VirtualMachineError with errors like LoadProgramError
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum FdeError {
     UnknownInstruction { _nibbles: [u8; 4] },
     SubroutineReturn,
     NibblesFetch { _opcode_bytes: [u8; 2] },
     OpcodeFetch,
+    StackOverflow,
 }
 
 impl std::fmt::Display for FdeError {
