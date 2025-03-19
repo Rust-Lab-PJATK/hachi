@@ -58,6 +58,10 @@ impl VirtualMachine {
         *self = Self::new();
     }
 
+    pub fn pause(&mut self) {
+        self.is_running = false;
+    }
+
     pub fn load_program(&mut self, path: &Path) {
         let file = File::open(path).unwrap();
         let file_size = file.metadata().unwrap().len() as usize;
@@ -73,6 +77,11 @@ impl VirtualMachine {
     }
 
     pub fn fde_cycle(&mut self) {
+        if self.program_counter + 1 >= self.memory.len() {
+            self.last_cycle_result = Err(FdeError::StackOverflow);
+            return;
+        }
+
         let opcode = self.memory
             [self.program_counter..self.program_counter + 2]
             .try_into();
