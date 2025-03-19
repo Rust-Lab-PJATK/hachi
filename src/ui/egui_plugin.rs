@@ -22,11 +22,11 @@ pub fn init<'a>(
         });
 
         CentralPanel::default().show(ctx, |ui| {
-            if let Some(e) = state.vm.last_cycle_result.clone().err() {
+            if let Err(e) = state.vm.last_cycle_result.clone() {
                 state.vm.pause();
 
                 Modal::new(Id::new("crash-vm-modal")).show(ui.ctx(), |ui| {
-                    ui.label("An VM crash has occurred!");
+                    ui.label("VM crash occurred:");
 
                     ui.add_space(25.0);
 
