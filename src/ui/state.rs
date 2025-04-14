@@ -8,10 +8,12 @@ use std::collections::HashMap;
 use std::ffi::OsString;
 use std::path::PathBuf;
 use std::sync::Arc;
+use crate::config::Configuration;
 
 #[derive(AppState)]
 pub struct State {
     pub last_dir: PathBuf,
+    pub configuration: Configuration,
     pub file_path_option: Arc<AsyncMutex<Option<PathBuf>>>,
     pub cycles_per_frame: u32,
     pub memory_debug_page: usize,
@@ -32,11 +34,13 @@ struct Args {
 
 pub fn setup(gfx: &mut Graphics) -> State {
     let args = Args::parse();
+
     let file_path = if args.file.is_empty() {
         None
     } else {
         Some(PathBuf::from(args.file).canonicalize().unwrap())
     };
+
     let last_dir = if let Some(path) = &file_path {
         path.parent().unwrap().to_path_buf()
     } else {
@@ -75,8 +79,16 @@ pub fn setup(gfx: &mut Graphics) -> State {
         (KeyCode::V, 0xF),
     ];
 
+    let config = Configuration::read().unwrap_or_else(|_| {
+        let c = Configuration::new();
+        c.update();
+
+        c
+    });
+
     State {
         last_dir,
+        configuration: config,
         file_path_option: Arc::new(AsyncMutex::new(file_path)),
         cycles_per_frame: 10,
         memory_debug_page: 0,

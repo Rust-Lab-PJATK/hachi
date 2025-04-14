@@ -1,5 +1,6 @@
 mod ui;
 mod vm;
+mod config;
 
 use notan::draw::DrawConfig;
 use notan::egui::EguiConfig;
