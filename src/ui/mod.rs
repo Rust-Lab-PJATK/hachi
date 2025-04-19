@@ -1,5 +1,6 @@
 mod consts;
 mod debug;
+mod options;
 pub(super) mod egui_plugin;
 pub mod state;
 

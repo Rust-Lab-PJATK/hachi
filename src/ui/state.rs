@@ -15,7 +15,6 @@ pub struct State {
     pub last_dir: PathBuf,
     pub configuration: Configuration,
     pub file_path_option: Arc<AsyncMutex<Option<PathBuf>>>,
-    pub cycles_per_frame: u32,
     pub memory_debug_page: usize,
     pub memory_address_search: String,
     pub vm: VirtualMachine,
@@ -24,6 +23,7 @@ pub struct State {
     pub vm_display: SizedTexture,
     pub keypad_bindigs: HashMap<KeyCode, usize>,
     pub timer: f32,
+    pub show_configuration_window: bool
 }
 
 #[derive(Parser)]
@@ -79,18 +79,12 @@ pub fn setup(gfx: &mut Graphics) -> State {
         (KeyCode::V, 0xF),
     ];
 
-    let config = Configuration::read().unwrap_or_else(|_| {
-        let c = Configuration::new();
-        c.update();
-
-        c
-    });
+    let config = Configuration::load().unwrap();
 
     State {
         last_dir,
         configuration: config,
         file_path_option: Arc::new(AsyncMutex::new(file_path)),
-        cycles_per_frame: 10,
         memory_debug_page: 0,
         memory_address_search: String::new(),
         vm: VirtualMachine::new(),
@@ -99,6 +93,7 @@ pub fn setup(gfx: &mut Graphics) -> State {
         vm_display: vm_display_texture,
         keypad_bindigs: default_bindings.into(),
         timer: 0.0,
+        show_configuration_window: false
     }
 }
 
@@ -151,7 +146,7 @@ pub fn update(app: &mut App, state: &mut State) {
     }
 
     if state.vm.is_running {
-        for _ in 0..state.cycles_per_frame {
+        for _ in 0..state.configuration.vm.cycles_per_frame {
             state.vm.fde_cycle();
         }
     }

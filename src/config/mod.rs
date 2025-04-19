@@ -1,46 +1,83 @@
 mod consts;
+mod errors;
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 use crate::config::consts::{CONFIG_FILE, CONFIG_PATH};
+use crate::config::errors::ConfigError;
 
 #[derive(Deserialize, Serialize)]
 pub struct Configuration {
-    pub cycle_per_frame: u32,
-    pub default_color: String
+    pub vm: VmOptions,
+    pub debug: DebugOptions,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct VmOptions {
+    pub cycles_per_frame: u32,
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct DebugOptions {
+    pub enable_debug_menu: bool,
+}
+
+impl Default for Configuration {
+    fn default() -> Self {
+        Self {
+            vm: VmOptions {
+                cycles_per_frame: 10,
+            },
+            debug: DebugOptions {
+                enable_debug_menu: false,
+            }
+        }
+    }
 }
 
 impl Configuration {
-    pub fn new() -> Self {
-        Self {
-            cycle_per_frame: 10,
-            default_color: String::from("#0D822C")
-        }
-    }
-
     fn get_file_path() -> PathBuf {
         dirs::home_dir().unwrap()
             .join(CONFIG_PATH)
             .join(CONFIG_FILE)
     }
 
-    pub fn read() -> Result<Configuration, String> {
+    pub fn load() -> Result<Self, ConfigError> {
         let file_path = Self::get_file_path();
-        let file_contents = match fs::read_to_string(file_path) {
-            Ok(c) => c,
-            Err(e) => {
-                return Err(format!("Error reading config file: {}", e));
-            }
-        };
 
-        toml::from_str(&file_contents).unwrap_or_else(|e| Err(format!("Error parsing config file: {}", e)))
+        if !file_path.exists() {
+            let config = Configuration::default();
+            config.update()?;
+
+            return Ok(config);
+        }
+
+        Ok(Self::read_from_file(&file_path)?)
     }
 
-    pub fn update(&self) {
-        let config_path = Self::get_file_path();
-        let config_to_str = toml::to_string(self).unwrap();
+    fn read_from_file(path: &PathBuf) -> Result<Configuration, ConfigError> {
+        let file_contents = fs::read_to_string(path)
+            .map_err(|_| ConfigError::NotReadable)?;
 
-        fs::write(config_path, config_to_str).unwrap();
+        match toml::from_str(&file_contents) {
+            Ok(config) => Ok(config),
+            Err(_) => Err(ConfigError::InvalidFileFormat),
+        }
+    }
+
+    pub fn update(&self) -> Result<(), ConfigError> {
+        let config_path = Self::get_file_path();
+
+        if !config_path.exists() {
+            fs::create_dir_all(config_path.parent().unwrap())
+                .map_err(|_| ConfigError::CannotCreateDirectory)?;
+        }
+
+        let config_to_str = toml::to_string(self).unwrap();
+        fs::write(config_path, config_to_str)
+            .map_err(|_| ConfigError::NotWritable)?;
+
+        Ok(())
     }
 }

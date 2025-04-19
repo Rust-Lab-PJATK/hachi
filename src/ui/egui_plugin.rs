@@ -8,6 +8,7 @@ use pollster::FutureExt;
 use rfd::AsyncFileDialog;
 use std::sync::Arc;
 use std::thread;
+use crate::ui::options::option_dialog;
 
 pub fn init<'a>(
     _app: &'a mut App,
@@ -20,6 +21,10 @@ pub fn init<'a>(
                 ui.menu_button("View", view_menu_handler(state));
             });
         });
+
+        if state.show_configuration_window {
+            option_dialog(state, ctx);
+        }
 
         CentralPanel::default().show(ctx, |ui| {
             if let Err(e) = state.vm.last_cycle_result.clone() {
@@ -122,11 +127,19 @@ fn file_menu_handler(state: &mut State) -> impl FnOnce(&mut Ui) + '_ {
                 });
             }
         }
+
+        if ui.button("Options").clicked() {
+            ui.close_menu();
+
+            state.show_configuration_window = true;
+        }
     }
 }
 
 fn view_menu_handler(state: &mut State) -> impl FnOnce(&mut Ui) + '_ {
     |ui| {
-        ui.checkbox(&mut state.debug_mode_enabled, "Debug mode");
+        ui.add_enabled_ui(state.configuration.debug.enable_debug_menu, |ui| {
+            ui.checkbox(&mut state.debug_mode_enabled, "Debug mode");
+        });
     }
 }
