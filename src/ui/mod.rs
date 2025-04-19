@@ -1,7 +1,7 @@
 mod consts;
 mod debug;
-mod options;
 pub(super) mod egui_plugin;
+mod options;
 pub mod state;
 
 use crate::vm::consts::DISPLAY_WIDTH;

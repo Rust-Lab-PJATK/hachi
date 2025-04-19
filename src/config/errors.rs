@@ -6,7 +6,7 @@ pub enum ConfigError {
     InvalidFileFormat,
     NotReadable,
     NotWritable,
-    CannotCreateDirectory
+    CannotCreateDirectory,
 }
 
 impl Display for ConfigError {

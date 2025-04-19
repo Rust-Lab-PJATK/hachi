@@ -1,5 +1,6 @@
 use super::state::State;
 use crate::ui::debug::{display_memory_contents, vm_display};
+use crate::ui::options::option_dialog;
 use notan::app::App;
 use notan::egui::{
     self, CentralPanel, Context, Grid, Id, Modal, SidePanel, TopBottomPanel, Ui,
@@ -8,7 +9,6 @@ use pollster::FutureExt;
 use rfd::AsyncFileDialog;
 use std::sync::Arc;
 use std::thread;
-use crate::ui::options::option_dialog;
 
 pub fn init<'a>(
     _app: &'a mut App,

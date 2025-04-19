@@ -1,3 +1,4 @@
+use crate::config::Configuration;
 use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 use crate::vm::VirtualMachine;
 use async_mutex::Mutex as AsyncMutex;
@@ -8,7 +9,6 @@ use std::collections::HashMap;
 use std::ffi::OsString;
 use std::path::PathBuf;
 use std::sync::Arc;
-use crate::config::Configuration;
 
 #[derive(AppState)]
 pub struct State {
@@ -23,7 +23,7 @@ pub struct State {
     pub vm_display: SizedTexture,
     pub keypad_bindigs: HashMap<KeyCode, usize>,
     pub timer: f32,
-    pub show_configuration_window: bool
+    pub show_configuration_window: bool,
 }
 
 #[derive(Parser)]
@@ -93,7 +93,7 @@ pub fn setup(gfx: &mut Graphics) -> State {
         vm_display: vm_display_texture,
         keypad_bindigs: default_bindings.into(),
         timer: 0.0,
-        show_configuration_window: false
+        show_configuration_window: false,
     }
 }
 
