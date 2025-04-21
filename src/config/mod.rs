@@ -7,13 +7,13 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Configuration {
     pub vm: VmOptions,
     pub debug: DebugOptions,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct VmOptions {
     pub cycles_per_frame: u32,
 }
@@ -56,10 +56,10 @@ impl Configuration {
         let file_contents =
             fs::read_to_string(path).map_err(|_| ConfigError::NotReadable)?;
 
-        match toml::from_str(&file_contents) {
-            Ok(config) => Ok(config),
-            Err(_) => Err(ConfigError::InvalidFileFormat),
-        }
+        let configuration = toml::from_str(&file_contents)
+            .map_err(|_| ConfigError::InvalidFileFormat)?;
+
+        Ok(configuration)
     }
 
     pub fn update(&self) -> Result<(), ConfigError> {

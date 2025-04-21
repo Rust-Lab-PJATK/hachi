@@ -1,6 +1,5 @@
 use crate::ui::consts::MEMORY_MAX_DISPLAY_ITEMS;
 use crate::ui::state::State;
-use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 use notan::egui;
 use notan::egui::{
     vec2, Align, Button, Color32, Frame, Grid, Layout, Mesh, Rect, ScrollArea,
@@ -18,11 +17,10 @@ fn filter_by_memory_address(index: &usize, state: &State) -> bool {
     *index == search_address
 }
 
-pub fn vm_display(state: &mut State, ui: &mut Ui) {
+pub fn vm_display(state: &mut State, ui: &mut Ui, height: f32, width: f32) {
     Frame::canvas(ui.style()).show(ui, |ui| {
         let rect = ui.max_rect();
-        let desired_size =
-            Vec2::new(DEBUG_DISPLAY_WIDTH as f32, DEBUG_DISPLAY_HEIGHT as f32);
+        let desired_size = Vec2::new(width, height);
 
         let mut vm_display_mesh = Mesh::with_texture(state.vm_display.id);
         vm_display_mesh.add_rect_with_uv(
@@ -33,8 +31,6 @@ pub fn vm_display(state: &mut State, ui: &mut Ui) {
 
         ui.painter().add(Shape::mesh(vm_display_mesh));
     });
-
-    ui.add_space(270.0);
 }
 
 pub fn display_memory_contents(ui: &mut Ui, state: &mut State) {

@@ -7,7 +7,6 @@ pub fn option_dialog(state: &mut State, ctx: &egui::Context) {
         .max_height(100.0)
         .max_width(200.0)
         .resizable(false)
-        .resizable(true)
         .show(ctx, |ui| {
             let mut cycles_per_frame_raw_text =
                 state.configuration.vm.cycles_per_frame.to_string();
@@ -37,6 +36,14 @@ pub fn option_dialog(state: &mut State, ctx: &egui::Context) {
             ui.centered_and_justified(|ui| {
                 if ui.button("Close").clicked() {
                     state.configuration.update().unwrap();
+
+                    if state.debug_mode_enabled {
+                        state.debug_mode_enabled =
+                            state.configuration.debug.enable_debug_menu;
+                    }
+
+                    state.cycles_per_frame =
+                        state.configuration.vm.cycles_per_frame;
                     state.show_configuration_window = false;
                 }
             });

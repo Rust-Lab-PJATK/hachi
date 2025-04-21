@@ -1,5 +1,4 @@
 use crate::config::Configuration;
-use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 use crate::vm::VirtualMachine;
 use async_mutex::Mutex as AsyncMutex;
 use clap::Parser;
@@ -24,6 +23,7 @@ pub struct State {
     pub keypad_bindigs: HashMap<KeyCode, usize>,
     pub timer: f32,
     pub show_configuration_window: bool,
+    pub cycles_per_frame: u32,
 }
 
 #[derive(Parser)]
@@ -47,10 +47,7 @@ pub fn setup(gfx: &mut Graphics) -> State {
         std::env::current_dir().unwrap()
     };
 
-    let display_renderer = gfx
-        .create_render_texture(DEBUG_DISPLAY_WIDTH, DEBUG_DISPLAY_HEIGHT)
-        .build()
-        .unwrap();
+    let display_renderer = gfx.create_render_texture(800, 600).build().unwrap();
 
     let vm_display_texture = gfx.egui_register_texture(&display_renderer);
 
@@ -83,7 +80,7 @@ pub fn setup(gfx: &mut Graphics) -> State {
 
     State {
         last_dir,
-        configuration: config,
+        configuration: config.clone(),
         file_path_option: Arc::new(AsyncMutex::new(file_path)),
         memory_debug_page: 0,
         memory_address_search: String::new(),
@@ -94,6 +91,7 @@ pub fn setup(gfx: &mut Graphics) -> State {
         keypad_bindigs: default_bindings.into(),
         timer: 0.0,
         show_configuration_window: false,
+        cycles_per_frame: config.vm.cycles_per_frame,
     }
 }
 
@@ -146,7 +144,7 @@ pub fn update(app: &mut App, state: &mut State) {
     }
 
     if state.vm.is_running {
-        for _ in 0..state.configuration.vm.cycles_per_frame {
+        for _ in 0..state.cycles_per_frame {
             state.vm.fde_cycle();
         }
     }

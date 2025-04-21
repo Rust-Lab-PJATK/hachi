@@ -53,10 +53,5 @@ pub fn draw(
     }
 
     gfx.render(&ui_renderer);
-
-    if state.debug_mode_enabled {
-        gfx.render_to(&state.display_renderer, &vm_display_renderer);
-    } else {
-        gfx.render(&vm_display_renderer);
-    }
+    gfx.render_to(&state.display_renderer, &vm_display_renderer);
 }
