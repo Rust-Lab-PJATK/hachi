@@ -18,7 +18,7 @@ pub struct VmOptions {
     pub cycles_per_frame: u32,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct DebugOptions {
     pub enable_debug_menu: bool,
 }
