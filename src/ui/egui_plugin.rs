@@ -156,9 +156,7 @@ fn file_menu_handler(state: &mut State) -> impl FnOnce(&mut Ui) + '_ {
 
 fn view_menu_handler(state: &mut State) -> impl FnOnce(&mut Ui) + '_ {
     |ui| {
-        ui.add_enabled_ui(state.configuration.debug.enable_debug_menu, |ui| {
-            ui.checkbox(&mut state.debug_mode_enabled, "Debug mode").clicked();
-        });
+        ui.checkbox(&mut state.debug_mode_enabled, "Debug mode").clicked();
     }
 }
 

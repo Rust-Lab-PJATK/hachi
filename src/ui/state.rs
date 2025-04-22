@@ -85,7 +85,7 @@ pub fn setup(gfx: &mut Graphics) -> State {
         memory_debug_page: 0,
         memory_address_search: String::new(),
         vm: VirtualMachine::new(),
-        debug_mode_enabled: false,
+        debug_mode_enabled: config.debug.enable_debug_menu,
         display_renderer,
         vm_display: vm_display_texture,
         keypad_bindigs: default_bindings.into(),

@@ -27,7 +27,7 @@ pub fn option_dialog(state: &mut State, ctx: &egui::Context) {
             ui.horizontal(|ui| {
                 ui.checkbox(
                     &mut state.configuration.debug.enable_debug_menu,
-                    "Debug mode",
+                    "Run \"Debug mode\" on start",
                 );
             });
 
@@ -36,11 +36,6 @@ pub fn option_dialog(state: &mut State, ctx: &egui::Context) {
             ui.centered_and_justified(|ui| {
                 if ui.button("Close").clicked() {
                     state.configuration.update().unwrap();
-
-                    if state.debug_mode_enabled {
-                        state.debug_mode_enabled =
-                            state.configuration.debug.enable_debug_menu;
-                    }
 
                     state.cycles_per_frame =
                         state.configuration.vm.cycles_per_frame;
