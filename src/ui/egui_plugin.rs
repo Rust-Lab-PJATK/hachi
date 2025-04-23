@@ -1,8 +1,11 @@
 use super::state::State;
 use crate::ui::debug::{display_memory_contents, vm_display};
+use crate::ui::options::option_dialog;
+use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 use notan::app::App;
 use notan::egui::{
-    self, CentralPanel, Context, Grid, Id, Modal, SidePanel, TopBottomPanel, Ui,
+    self, CentralPanel, Color32, Context, Grid, Id, Mesh, Modal, Rect, Shape,
+    SidePanel, TopBottomPanel, Ui, Vec2,
 };
 use pollster::FutureExt;
 use rfd::AsyncFileDialog;
@@ -20,6 +23,10 @@ pub fn init<'a>(
                 ui.menu_button("View", view_menu_handler(state));
             });
         });
+
+        if state.show_configuration_window {
+            option_dialog(state, ctx);
+        }
 
         CentralPanel::default().show(ctx, |ui| {
             if let Err(e) = state.vm.last_cycle_result.clone() {
@@ -47,9 +54,18 @@ pub fn init<'a>(
             }
         });
 
-        if !state.vm.is_running && !state.debug_mode_enabled {
+        if !state.debug_mode_enabled {
             CentralPanel::default().show(ctx, |ui| {
-                ui.label("Welcome to Hachi!");
+                if !state.vm.is_running {
+                    ui.label("Welcome to Hachi!");
+                } else {
+                    vm_display_fullscreen(
+                        state,
+                        ui,
+                        _app.window().width() as f32,
+                        _app.window().width() as f32,
+                    );
+                }
             });
         }
 
@@ -80,7 +96,14 @@ pub fn init<'a>(
                         });
 
                         ui.vertical(|ui| {
-                            vm_display(state, ui);
+                            vm_display(
+                                state,
+                                ui,
+                                DEBUG_DISPLAY_HEIGHT as f32,
+                                DEBUG_DISPLAY_WIDTH as f32,
+                            );
+
+                            ui.add_space(270.0);
 
                             ui.separator();
 
@@ -122,11 +145,31 @@ fn file_menu_handler(state: &mut State) -> impl FnOnce(&mut Ui) + '_ {
                 });
             }
         }
+
+        if ui.button("Options").clicked() {
+            ui.close_menu();
+
+            state.show_configuration_window = true;
+        }
     }
 }
 
 fn view_menu_handler(state: &mut State) -> impl FnOnce(&mut Ui) + '_ {
     |ui| {
-        ui.checkbox(&mut state.debug_mode_enabled, "Debug mode");
+        ui.checkbox(&mut state.debug_mode_enabled, "Debug mode").clicked();
     }
+}
+
+fn vm_display_fullscreen(state: &State, ui: &mut Ui, height: f32, width: f32) {
+    let rect = ui.available_rect_before_wrap();
+    let desired_size = Vec2::new(width, height / 1.5);
+
+    let mut vm_display_mesh = Mesh::with_texture(state.vm_display.id);
+    vm_display_mesh.add_rect_with_uv(
+        Rect::from_min_size(egui::pos2(0.0, rect.min.y), desired_size),
+        Rect::from_min_max(egui::pos2(0.0, 1.0), egui::pos2(1.0, 0.0)),
+        Color32::WHITE,
+    );
+
+    ui.painter().add(Shape::mesh(vm_display_mesh));
 }

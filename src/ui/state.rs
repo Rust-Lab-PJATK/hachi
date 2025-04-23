@@ -1,4 +1,4 @@
-use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
+use crate::config::Configuration;
 use crate::vm::VirtualMachine;
 use async_mutex::Mutex as AsyncMutex;
 use clap::Parser;
@@ -12,8 +12,8 @@ use std::sync::Arc;
 #[derive(AppState)]
 pub struct State {
     pub last_dir: PathBuf,
+    pub configuration: Configuration,
     pub file_path_option: Arc<AsyncMutex<Option<PathBuf>>>,
-    pub cycles_per_frame: u32,
     pub memory_debug_page: usize,
     pub memory_address_search: String,
     pub vm: VirtualMachine,
@@ -22,6 +22,8 @@ pub struct State {
     pub vm_display: SizedTexture,
     pub keypad_bindigs: HashMap<KeyCode, usize>,
     pub timer: f32,
+    pub show_configuration_window: bool,
+    pub cycles_per_frame: u32,
 }
 
 #[derive(Parser)]
@@ -32,21 +34,20 @@ struct Args {
 
 pub fn setup(gfx: &mut Graphics) -> State {
     let args = Args::parse();
+
     let file_path = if args.file.is_empty() {
         None
     } else {
         Some(PathBuf::from(args.file).canonicalize().unwrap())
     };
+
     let last_dir = if let Some(path) = &file_path {
         path.parent().unwrap().to_path_buf()
     } else {
         std::env::current_dir().unwrap()
     };
 
-    let display_renderer = gfx
-        .create_render_texture(DEBUG_DISPLAY_WIDTH, DEBUG_DISPLAY_HEIGHT)
-        .build()
-        .unwrap();
+    let display_renderer = gfx.create_render_texture(800, 600).build().unwrap();
 
     let vm_display_texture = gfx.egui_register_texture(&display_renderer);
 
@@ -75,18 +76,22 @@ pub fn setup(gfx: &mut Graphics) -> State {
         (KeyCode::V, 0xF),
     ];
 
+    let config = Configuration::load().unwrap();
+
     State {
         last_dir,
+        configuration: config.clone(),
         file_path_option: Arc::new(AsyncMutex::new(file_path)),
-        cycles_per_frame: 10,
         memory_debug_page: 0,
         memory_address_search: String::new(),
         vm: VirtualMachine::new(),
-        debug_mode_enabled: false,
+        debug_mode_enabled: config.debug.enable_debug_menu,
         display_renderer,
         vm_display: vm_display_texture,
         keypad_bindigs: default_bindings.into(),
         timer: 0.0,
+        show_configuration_window: false,
+        cycles_per_frame: config.vm.cycles_per_frame,
     }
 }
 
