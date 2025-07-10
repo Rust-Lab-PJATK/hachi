@@ -11,6 +11,7 @@ use std::path::PathBuf;
 pub struct Configuration {
     pub vm: VmOptions,
     pub debug: DebugOptions,
+    pub sound: SoundOptions,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -23,11 +24,17 @@ pub struct DebugOptions {
     pub enable_debug_menu: bool,
 }
 
+#[derive(Clone, Deserialize, Serialize)]
+pub struct SoundOptions {
+    pub volume: f32,
+}
+
 impl Default for Configuration {
     fn default() -> Self {
         Self {
             vm: VmOptions { cycles_per_frame: 10 },
             debug: DebugOptions { enable_debug_menu: false },
+            sound: SoundOptions { volume: 1.0 },
         }
     }
 }
