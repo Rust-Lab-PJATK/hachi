@@ -33,6 +33,15 @@ pub fn vm_display(state: &mut State, ui: &mut Ui, height: f32, width: f32) {
     });
 }
 
+pub fn display_pointers(ui: &mut Ui, state: &mut State) {
+    ui.vertical(|ui| {
+        ui.label("Pointers");
+
+        ui.label(format!("pc: {}", state.vm.program_counter));
+        ui.label(format!("i: {}", state.vm.i_register));
+    });
+}
+
 pub fn display_memory_contents(ui: &mut Ui, state: &mut State) {
     ui.horizontal(|ui| {
         ui.label("Memory");
