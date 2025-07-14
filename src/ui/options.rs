@@ -1,6 +1,6 @@
 use crate::ui::state::State;
 use notan::egui;
-use notan::egui::Window;
+use notan::egui::{Slider, Window};
 
 pub fn option_dialog(state: &mut State, ctx: &egui::Context) {
     Window::new("Options")
@@ -22,6 +22,14 @@ pub fn option_dialog(state: &mut State, ctx: &egui::Context) {
                         state.configuration.vm.cycles_per_frame = value;
                     }
                 }
+            });
+
+            ui.horizontal(|ui| {
+                ui.label("Sound volume");
+                ui.add(Slider::new(
+                    &mut state.configuration.sound.volume,
+                    0.0..=1.0,
+                ));
             });
 
             ui.horizontal(|ui| {

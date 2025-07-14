@@ -24,6 +24,9 @@ pub struct State {
     pub timer: f32,
     pub show_configuration_window: bool,
     pub cycles_per_frame: u32,
+    sound: Option<Sound>,
+    beep_audio_source: AudioSource,
+    is_beeping: bool,
 }
 
 #[derive(Parser)]
@@ -32,7 +35,7 @@ struct Args {
     file: OsString,
 }
 
-pub fn setup(gfx: &mut Graphics) -> State {
+pub fn setup(app: &mut App, gfx: &mut Graphics) -> State {
     let args = Args::parse();
 
     let file_path = if args.file.is_empty() {
@@ -78,6 +81,11 @@ pub fn setup(gfx: &mut Graphics) -> State {
 
     let config = Configuration::load().unwrap();
 
+    let audio_source = app
+        .audio
+        .create_source(include_bytes!("../../assets/beep.ogg"))
+        .expect("Failed to create audio source");
+
     State {
         last_dir,
         configuration: config.clone(),
@@ -92,6 +100,9 @@ pub fn setup(gfx: &mut Graphics) -> State {
         timer: 0.0,
         show_configuration_window: false,
         cycles_per_frame: config.vm.cycles_per_frame,
+        sound: None,
+        beep_audio_source: audio_source,
+        is_beeping: false,
     }
 }
 
@@ -123,9 +134,24 @@ pub fn update(app: &mut App, state: &mut State) {
         if state.vm.delay_timer != 0 {
             state.vm.delay_timer -= 1;
         }
-        if state.vm.sound_timer != 0 {
-            // TODO: play sound here
+
+        if state.vm.sound_timer > 0 {
+            if !state.is_beeping {
+                state.sound = Some(app.audio.play_sound(
+                    &state.beep_audio_source,
+                    state.configuration.sound.volume,
+                    true,
+                ));
+
+                state.is_beeping = true;
+            }
+
             state.vm.sound_timer -= 1;
+        } else if state.is_beeping {
+            if let Some(sound) = &state.sound {
+                app.audio.stop(sound);
+                state.is_beeping = false;
+            }
         }
     }
 
