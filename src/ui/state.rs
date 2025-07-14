@@ -24,8 +24,8 @@ pub struct State {
     pub timer: f32,
     pub show_configuration_window: bool,
     pub cycles_per_frame: u32,
-    beep_audio_source: AudioSource,
     sound: Option<Sound>,
+    beep_audio_source: AudioSource,
     is_beeping: bool,
 }
 
@@ -100,8 +100,8 @@ pub fn setup(app: &mut App, gfx: &mut Graphics) -> State {
         timer: 0.0,
         show_configuration_window: false,
         cycles_per_frame: config.vm.cycles_per_frame,
-        beep_audio_source: audio_source,
         sound: None,
+        beep_audio_source: audio_source,
         is_beeping: false,
     }
 }
@@ -137,18 +137,21 @@ pub fn update(app: &mut App, state: &mut State) {
 
         if state.vm.sound_timer > 0 {
             if !state.is_beeping {
-                state.sound = Option::from(app.audio.play_sound(
+                state.sound = Some(app.audio.play_sound(
                     &state.beep_audio_source,
                     state.configuration.sound.volume,
                     true,
                 ));
+
                 state.is_beeping = true;
             }
 
             state.vm.sound_timer -= 1;
         } else if state.is_beeping {
-            app.audio.stop(&state.sound.clone().unwrap());
-            state.is_beeping = false;
+            if let Some(sound) = &state.sound {
+                app.audio.stop(sound);
+                state.is_beeping = false;
+            }
         }
     }
 
