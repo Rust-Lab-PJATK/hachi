@@ -34,7 +34,7 @@ impl Default for Configuration {
         Self {
             vm: VmOptions { cycles_per_frame: 10 },
             debug: DebugOptions { enable_debug_menu: false },
-            sound: SoundOptions { volume: 1.0 },
+            sound: SoundOptions { volume: 0.85 },
         }
     }
 }
