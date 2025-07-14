@@ -1,5 +1,5 @@
 use super::state::State;
-use crate::ui::debug::{display_memory_contents, vm_display};
+use crate::ui::debug::{display_memory_contents, display_pointers, vm_display};
 use crate::ui::options::option_dialog;
 use crate::vm::consts::{DEBUG_DISPLAY_HEIGHT, DEBUG_DISPLAY_WIDTH};
 use notan::app::App;
@@ -89,6 +89,10 @@ pub fn init<'a>(
                             ui.label(
                                 " 1 2 3 c \n 4 5 6 d \n 7 8 9 e \n a 0 b f",
                             );
+
+                            ui.separator();
+
+                            display_pointers(ui, state);
 
                             ui.separator();
 
